@@ -106,16 +106,16 @@ def eye_bboxes(landmarks):
 def imprint_on_img(img, principal_face, landmarks, left_eye_bbox, right_eye_bbox):
      # Print face bbox, landmarks and the eye bboxes on the image for verification.
     cv2.rectangle(img, (principal_face.left(), principal_face.top()),
-                (principal_face.right(), principal_face.bottom()), (255, 0, 0), 12);
+                (principal_face.right(), principal_face.bottom()), (255, 0, 0), 8);
 
     for (x, y) in landmarks:
-        cv2.circle(img, (x, y), 8, (255, 0, 0), -1);
+        cv2.circle(img, (x, y), 4, (255, 0, 0), -1);
 
     cv2.rectangle(img, (left_eye_bbox[0], left_eye_bbox[1]),
-                (left_eye_bbox[2], left_eye_bbox[3]), (0, 255, 0), 6);
+                (left_eye_bbox[2], left_eye_bbox[3]), (0, 255, 0), 4);
 
     cv2.rectangle(img, (right_eye_bbox[0], right_eye_bbox[1]),
-                (right_eye_bbox[2], right_eye_bbox[3]), (0, 0, 255), 6);
+                (right_eye_bbox[2], right_eye_bbox[3]), (0, 0, 255), 4);
 
     return img
 
