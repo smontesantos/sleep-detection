@@ -9,16 +9,16 @@ def main():
     st.set_page_config(layout="wide")
     st.title("Sleep Detection Web App", )
 
-    uploaded_file = st.file_uploader("Upload a video file", type=["avi", "mp4"])
+    uploaded_file = st.file_uploader("Upload the video file", type=["avi", "mp4"])
 
     if uploaded_file is not None:
         
         # Display the original video
         
-        st.header("Original Video")
+        # st.header("Original Video")
         # st.video(uploaded_file)
 
-        DEFAULT_WIDTH = 25
+        DEFAULT_WIDTH = 50
 
         width = st.sidebar.slider(
             label="Video size", min_value=0, max_value=100, value=DEFAULT_WIDTH, format="%d%%"

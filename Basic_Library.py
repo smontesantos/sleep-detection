@@ -11,7 +11,7 @@ It contains all the subroutines used to perform face and landmark detection and 
 
 #%%
 import numpy as np
-import cv2,dlib
+import cv2,dlib, imageio
 import os
 import matplotlib.pyplot as plt
 
@@ -105,17 +105,17 @@ def eye_bboxes(landmarks):
 # Output:   The input image with the featuresi mprinted on it.
 def imprint_on_img(img, principal_face, landmarks, left_eye_bbox, right_eye_bbox):
      # Print face bbox, landmarks and the eye bboxes on the image for verification.
-    cv2.rectangle(img, (principal_face.left(), principal_face.top()),
-                (principal_face.right(), principal_face.bottom()), (255, 0, 0), 8);
+    # cv2.rectangle(img, (principal_face.left(), principal_face.top()),
+    #             (principal_face.right(), principal_face.bottom()), (255, 0, 0), 8);
 
     for (x, y) in landmarks:
-        cv2.circle(img, (x, y), 4, (255, 0, 0), -1);
+        cv2.circle(img, (x, y), 4, (0, 0, 255), -1);
 
     cv2.rectangle(img, (left_eye_bbox[0], left_eye_bbox[1]),
                 (left_eye_bbox[2], left_eye_bbox[3]), (0, 255, 0), 4);
 
     cv2.rectangle(img, (right_eye_bbox[0], right_eye_bbox[1]),
-                (right_eye_bbox[2], right_eye_bbox[3]), (0, 0, 255), 4);
+                (right_eye_bbox[2], right_eye_bbox[3]), (255, 0, 0), 4);
 
     return img
 
@@ -142,3 +142,63 @@ def sleepy(left_eye_bbox, right_eye_bbox, thresh = 0.15):
         sleep = True
 
     return sleep
+
+
+#%%
+################################################################
+# Frame processing to detect the face, the landmarks, the eye bboxes and whether the eyes are closed or not.
+# Input:    frame       -->     Each frame as captured by the video.
+#           detector    -->     The dlib frontface detector.
+#           predictor   -->     The dlib frontface facial landmark predictor.
+# Outputs:  frame2      -->     The frame with the facial landmarks and eye bboxes imprinted on it.
+#           eyes_closed -->     A boolean determining if in this frame, both eyes are closed.
+
+def frame_processing(frame, detector, predictor):
+    # Transform frame to grayscale.
+    frame_gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+
+    # Get the number of faces on the frame and choose only the largest one.
+    faces = detector(frame_gray, 1)
+    # nb_faces_front=len(list(enumerate(faces)))
+    # print("Front facial detector found {0} faces".format(nb_faces_front))
+
+
+    # Call function largest_front to get the principal face in the image.
+    principal_face = largest_front(faces)
+
+    # Call the predictor and the function shape_to_np to get a list of facial landmark coordinates.
+    landmarks = predictor(frame_gray, principal_face)
+    landmarks = shape_to_np(landmarks)
+
+    # Call function eye_bboxes to obtain the bboxes for the left and the right eye.
+    left_eye_bbox, right_eye_bbox = eye_bboxes(landmarks)
+
+    # Call function sleepy to determine if the eyes in the image are enough closed to indicate sleepy condition.
+    eyes_closed = sleepy(left_eye_bbox, right_eye_bbox, thresh = 0.15)
+
+    # Call function imprint_on_img to print the detected features on the input image.
+    frame2 = imprint_on_img(frame, principal_face, landmarks, left_eye_bbox, right_eye_bbox)
+
+    return frame2, eyes_closed
+
+
+
+#%%
+################################################################
+# Create the output video.
+# Input:    modified_frames --> A list containing the modified frames we want in order to create the video.
+#           output_vid_path --> The path to store the video.
+#           target_fps      --> The fps of the output video.
+#           width           --> The frame width.
+#           height          --> The frame height.
+# Outputs:  A h.264 .mp4 video stored in the output_vid_path.
+
+def video_creator_264(modified_frames, output_vid_path, target_fps):
+    # Use the imageio writer to achieve h.264 coded .mp4 video.
+    writer = imageio.get_writer(output_vid_path, fps = target_fps)
+    for frame in modified_frames:
+        rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        writer.append_data(rgb_frame)
+
+    writer.close()
+    
