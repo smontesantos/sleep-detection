@@ -10,10 +10,18 @@ It contains all the subroutines used to perform face and landmark detection and 
 """
 
 #%%
+# Import libraries
 import numpy as np
-import cv2,dlib, imageio
-import os
 import matplotlib.pyplot as plt
+import os
+import base64
+import io
+import tempfile
+
+# Image processing libraries
+import cv2 
+import dlib
+import imageio
 
 
 
@@ -185,7 +193,7 @@ def frame_processing(frame, detector, predictor):
 
 #%%
 ################################################################
-# Create the output video.
+# Create the output video; store to disk.
 # Input:    modified_frames --> A list containing the modified frames we want in order to create the video.
 #           output_vid_path --> The path to store the video.
 #           target_fps      --> The fps of the output video.
@@ -201,4 +209,30 @@ def video_creator_264(modified_frames, output_vid_path, target_fps):
         writer.append_data(rgb_frame)
 
     writer.close()
-    
+
+
+
+#%%
+################################################################
+# Create the output video; store to memory.
+# Input:    modified_frames --> A list containing the modified frames we want in order to create the video.
+#           output_vid_path --> The path to store the video.
+#           target_fps      --> The fps of the output video.
+#           width           --> The frame width.
+#           height          --> The frame height.
+# Outputs:  A h.264 .mp4 video stored in the output_vid_path.
+
+def video_creator_264_to_memory(modified_frames, target_fps):
+    # Store output video to memory.
+    output_video = io.BytesIO()
+
+    # Use the imageio writer to achieve h.264 coded .mp4 video.
+    writer = imageio.get_writer(output_video, fps=target_fps, format="mp4")
+
+    for frame in modified_frames:
+        rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        writer.append_data(rgb_frame)
+
+    writer.close()
+
+    return output_video
