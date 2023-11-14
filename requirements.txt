@@ -25,6 +25,7 @@ decorator==5.1.1
 defusedxml==0.7.1
 dlib==19.24.2
 executing==2.0.1
+face-recognition-models==0.3.0
 fastjsonschema==2.18.1
 flatbuffers==23.5.26
 fonttools==4.44.0
