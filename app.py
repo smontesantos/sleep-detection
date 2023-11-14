@@ -21,7 +21,7 @@ def main():
     st.set_page_config(layout="wide")
     st.title("Sleep Detection Web App", )
 
-    explainer_text = '''This is a webapp simulating the activity of a sleep detector. The user is asked to import a video containing faces. The video is uploaded and processed and the faces and eyes are detected. If the eyes of the principal face in the image (i.e. the face with the largest bounding box) close for more than 1 second, there is a visual and sound sleep detection alarm.'''
+    explainer_text = '''This is a webapp simulating the activity of a sleep detector. The user is asked to import a video containing faces. The video is uploaded and processed and the faces and eyes are detected. If the eyes of the principal face in the image (i.e. the face with the largest bounding box) close there is a visual alarm. In later development there will also be a sound alarm.'''
 
     st.markdown(explainer_text)
     uploaded_file = st.file_uploader("Upload the video file - preferably w:480 - h:640", type=["avi", "mp4"])
@@ -49,6 +49,7 @@ def main():
         # Import landmark predictor.
         landmark_predictor_path = os.path.join('models', 'shape_predictor_68_face_landmarks.dat' )
         predictor = dlib.shape_predictor(landmark_predictor_path)
+
 
         # Loop through the uploaded video frames, make modifications and collate into new video.
         modified_frames = []

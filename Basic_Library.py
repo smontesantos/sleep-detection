@@ -103,6 +103,7 @@ def eye_bboxes(landmarks):
     return left_eye_bbox, right_eye_bbox
 
 
+
 #%%
 ################################################################
 # Imprint the face bbox, the detected landmarks and the two eye bboxes on the image.
@@ -127,7 +128,6 @@ def imprint_on_img(img, principal_face, landmarks, left_eye_bbox, right_eye_bbox
 
     return img
 
-
 #%%
 ################################################################
 # Determine if sleepy condition.
@@ -150,6 +150,53 @@ def sleepy(left_eye_bbox, right_eye_bbox, thresh = 0.15):
         sleep = True
 
     return sleep
+
+
+
+#%%
+################################################################
+# Imprint text on the image depending on the output of the sleepy subroutine. The text is displayed as a subtitle, with position and size adaptively calculated based on the image size.
+# Input:    img     -->     the image on which we want to imprint the text.
+#           sleep   -->     a boolean (true if eyes closed, false if eyes open), the output of the sleepy subroutine.
+#           
+# Output:   The input image with the subtitle imprinted on it.
+def imprint_text(frame, sleep):
+
+    if sleep == True:
+        text = 'EYES CLOSED'
+        font_color = (0, 0 , 255)
+    else:
+        text = 'EYES OPEN'
+        font_color = (0, 255, 0)
+    
+    h, w, _ = frame.shape
+    font = cv2.FONT_HERSHEY_SIMPLEX
+    font_scale = w / 750
+    font_thickness = max(1, int(font_scale * 4))
+    text_size = cv2.getTextSize(text, font, font_scale, font_thickness)[0]
+    position = ((w - text_size[0]) // 2, 
+                h - int(0.05 * h))
+    cv2.putText(frame, text, position, font, font_scale, font_color, font_thickness);
+
+    return frame
+
+
+#%%
+################################################################
+# Imprint a red frame on the image depending on the output of the sleepy subroutine. The frame is red and displayed only if the eyes are detected to be closed. The size of the frame is adaptively calculated based on the image size.
+# Input:    img     -->     the image on which we want to imprint the text.
+#           sleep   -->     a boolean (true if eyes closed, false if eyes open), the output of the sleepy subroutine.
+#           
+# Output:   The input image with the red frame imprinted on it.
+def imprint_red_frame(frame, sleep):
+    if sleep == True:
+        h, w, _ = frame.shape
+        frame_depth = min(w, h) // 60
+        top_left = (frame_depth, frame_depth)
+        bottom_right = (w-frame_depth, h-frame_depth)
+        cv2.rectangle(frame, top_left, bottom_right, (0, 0, 255), frame_depth);
+
+    return frame
 
 
 #%%
@@ -182,10 +229,16 @@ def frame_processing(frame, detector, predictor):
     left_eye_bbox, right_eye_bbox = eye_bboxes(landmarks)
 
     # Call function sleepy to determine if the eyes in the image are enough closed to indicate sleepy condition.
-    eyes_closed = sleepy(left_eye_bbox, right_eye_bbox, thresh = 0.15)
+    eyes_closed = sleepy(left_eye_bbox, right_eye_bbox, 0.25)
 
     # Call function imprint_on_img to print the detected features on the input image.
     frame2 = imprint_on_img(frame, principal_face, landmarks, left_eye_bbox, right_eye_bbox)
+
+    # Call function imprint_text to print subtitle on the image depending on eyes open or closed.
+    frame2 = imprint_text(frame2, eyes_closed)
+
+    # Call function imprint_frame to create red frame on the image depending on eyes open or closed.
+    img2 = imprint_red_frame(frame2, eyes_closed)
 
     return frame2, eyes_closed
 
